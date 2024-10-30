@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCategory } from '../redux/categorySlice';
-import { addProduct } from '../redux/productsSlice';
+import { addProduct, updateProduct } from '../redux/productsSlice';
 
-const ProductForm = ({ closeModal }) => {
+const ProductForm = ({ closeModal, product }) => {
   const dispatch = useDispatch();
   const { items: categories, loading, error } = useSelector((state) => state.category);
-  
+
   const [image, setImage] = useState(null);
   const [productName, setProductName] = useState('');
   const [category, setCategory] = useState('');
@@ -15,8 +15,16 @@ const ProductForm = ({ closeModal }) => {
   const [stockStatus, setStockStatus] = useState('In Stock');
 
   useEffect(() => {
+    if (product) {
+      // If editing a product, set the fields to the existing product values
+      setProductName(product.productName);
+      setCategory(product.category ? product.category._id : '');
+      setPrice(product.price);
+      setDescription(product.description);
+      setStockStatus(product.stockStatus);
+    }
     dispatch(getCategory());
-  }, [dispatch]);
+  }, [dispatch, product]); // Dependency on product to update when it changes
 
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);
@@ -25,25 +33,30 @@ const ProductForm = ({ closeModal }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Create FormData to handle file upload
     const formData = new FormData();
     formData.append('productName', productName);
     formData.append('category', category);
     formData.append('price', price);
     formData.append('description', description);
     formData.append('stockStatus', stockStatus);
-    if (image) formData.append('image', image); // Add image file
+    if (image) formData.append('image', image);
 
-    // Dispatch the addProduct action with formData
-    dispatch(addProduct(formData)).then(() => {
-      closeModal(); // Close modal after submission
-    });
+    // Dispatch add or update based on whether a product is being edited
+    if (product) {
+      dispatch(updateProduct({ id: product._id, productData: formData })).then(() => {
+        closeModal();
+      });
+    } else {
+      dispatch(addProduct(formData)).then(() => {
+        closeModal();
+      });
+    }
   };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75">
       <div className="bg-white p-6 rounded-lg w-1/3 shadow-lg">
-        <h2 className="text-2xl font-bold mb-4">Create Product</h2>
+        <h2 className="text-2xl font-bold mb-4">{product ? 'Update Product' : 'Create Product'}</h2>
         
         <form onSubmit={handleSubmit} encType="multipart/form-data">
           <div className="mb-4">
@@ -74,7 +87,6 @@ const ProductForm = ({ closeModal }) => {
               ) : (
                 categories.map((cat) => (
                   <option key={cat.id} value={cat._id}>{cat.name}</option>
-
                 ))
               )}
             </select>
@@ -111,7 +123,6 @@ const ProductForm = ({ closeModal }) => {
               accept="image/*"
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               onChange={handleImageChange}
-              required
             />
           </div>
 
@@ -149,7 +160,7 @@ const ProductForm = ({ closeModal }) => {
               type="submit"
               className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
             >
-              Save
+              {product ? 'Update' : 'Save'}
             </button>
           </div>
         </form>

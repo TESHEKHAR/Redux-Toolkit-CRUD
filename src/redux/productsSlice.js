@@ -12,6 +12,22 @@ export const addProduct = createAsyncThunk('products/addProduct', async (product
   const response = await api.post('/products', productData);
   return response.data;
 });
+export const GetSingleProduct = createAsyncThunk('products/GetSingleProduct', async (id) => {
+  const response = await api.get(`/products/${id}`);
+  return response.data;
+});
+
+// Update a product
+export const updateProduct = createAsyncThunk('products/updateProduct', async ({ id, productData }) => {
+  const response = await api.put(`/products/${id}`, productData);
+  return response.data;
+});
+
+// Delete a product
+export const deleteProduct = createAsyncThunk('products/deleteProduct', async (id) => {
+  await api.delete(`/products/${id}`);
+  return id;
+});
 
 const productsSlice = createSlice({
   name: 'products',
@@ -35,7 +51,16 @@ const productsSlice = createSlice({
         state.error = action.error.message;
       })
       .addCase(addProduct.fulfilled, (state, action) => {
-        state.items.push(action.payload); 
+        state.items.push(action.payload);
+      })
+      .addCase(updateProduct.fulfilled, (state, action) => {
+        const index = state.items.findIndex((item) => item._id === action.payload._id);
+        if (index !== -1) {
+          state.items[index] = action.payload;
+        }
+      })
+      .addCase(deleteProduct.fulfilled, (state, action) => {
+        state.items = state.items.filter((item) => item._id !== action.payload);
       });
   },
 });
