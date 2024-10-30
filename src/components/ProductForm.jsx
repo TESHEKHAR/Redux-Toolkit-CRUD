@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCategory } from '../redux/categorySlice';
+import { addProduct } from '../redux/productsSlice';
 
 const ProductForm = ({ closeModal }) => {
   const dispatch = useDispatch();
@@ -23,8 +24,20 @@ const ProductForm = ({ closeModal }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form submitted:', { productName, category, price, description, stockStatus, image });
-    closeModal();
+
+    // Create FormData to handle file upload
+    const formData = new FormData();
+    formData.append('productName', productName);
+    formData.append('category', category);
+    formData.append('price', price);
+    formData.append('description', description);
+    formData.append('stockStatus', stockStatus);
+    if (image) formData.append('image', image); // Add image file
+
+    // Dispatch the addProduct action with formData
+    dispatch(addProduct(formData)).then(() => {
+      closeModal(); // Close modal after submission
+    });
   };
 
   return (
@@ -32,7 +45,7 @@ const ProductForm = ({ closeModal }) => {
       <div className="bg-white p-6 rounded-lg w-1/3 shadow-lg">
         <h2 className="text-2xl font-bold mb-4">Create Product</h2>
         
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} encType="multipart/form-data">
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">Product Name</label>
             <input
@@ -60,7 +73,8 @@ const ProductForm = ({ closeModal }) => {
                 <option value="" disabled>Error loading categories</option>
               ) : (
                 categories.map((cat) => (
-                  <option key={cat.id} value={cat.name}>{cat.name}</option>
+                  <option key={cat.id} value={cat._id}>{cat.name}</option>
+
                 ))
               )}
             </select>
