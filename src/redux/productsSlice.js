@@ -12,16 +12,13 @@ export const addProduct = createAsyncThunk('products/addProduct', async (product
   const response = await api.post('/products', productData);
   return response.data;
 });
-export const GetSingleProduct = createAsyncThunk('products/GetSingleProduct', async (id) => {
-  const response = await api.get(`/products/${id}`);
-  return response.data;
-});
 
 // Update a product
 export const updateProduct = createAsyncThunk('products/updateProduct', async ({ id, productData }) => {
   const response = await api.put(`/products/${id}`, productData);
   return response.data;
 });
+
 
 // Delete a product
 export const deleteProduct = createAsyncThunk('products/deleteProduct', async (id) => {

@@ -38,6 +38,7 @@ const ProductDetails = () => {
       <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
         <thead className="ltr:text-left rtl:text-right">
           <tr>
+            <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Image</th>
             <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Product Name</th>
             <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Category</th>
             <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Price</th>
@@ -47,6 +48,13 @@ const ProductDetails = () => {
         <tbody className="divide-y divide-gray-200">
           {products.map((product) => (
             <tr key={product._id}>
+              <td className="whitespace-nowrap px-4 py-2">
+                {product.image ? ( // Check if the image exists
+                  <img src={product.image} alt={product.productName} className="h-12 w-12 object-cover" />
+                ) : (
+                  <span>No Image</span> // Fallback if no image is available
+                )}
+              </td>
               <td className="whitespace-nowrap px-4 py-2">{product.productName}</td>
               <td className="whitespace-nowrap px-4 py-2">{product.category?.name}</td>
               <td className="whitespace-nowrap px-4 py-2">${product.price}</td>

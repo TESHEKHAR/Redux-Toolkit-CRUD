@@ -8,6 +8,7 @@ const ProductForm = ({ closeModal, product }) => {
   const { items: categories, loading, error } = useSelector((state) => state.category);
 
   const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
   const [productName, setProductName] = useState('');
   const [category, setCategory] = useState('');
   const [price, setPrice] = useState('');
@@ -15,43 +16,69 @@ const ProductForm = ({ closeModal, product }) => {
   const [stockStatus, setStockStatus] = useState('In Stock');
 
   useEffect(() => {
+    // Load existing product data if available
     if (product) {
-      // If editing a product, set the fields to the existing product values
       setProductName(product.productName);
       setCategory(product.category ? product.category._id : '');
       setPrice(product.price);
       setDescription(product.description);
       setStockStatus(product.stockStatus);
+      setImagePreview(product.image); // Use the product image for the preview
+    } else {
+      // Clear form fields for new product
+      setImagePreview('');
     }
     dispatch(getCategory());
-  }, [dispatch, product]); // Dependency on product to update when it changes
+  }, [dispatch, product]);
 
   const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
+    const file = e.target.files[0];
+    setImage(file);
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setImagePreview('');
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const formData = new FormData();
     formData.append('productName', productName);
     formData.append('category', category);
     formData.append('price', price);
     formData.append('description', description);
     formData.append('stockStatus', stockStatus);
-    if (image) formData.append('image', image);
+    if (image) formData.append('image', image); // Append new image if it exists
 
     // Dispatch add or update based on whether a product is being edited
     if (product) {
-      dispatch(updateProduct({ id: product._id, productData: formData })).then(() => {
-        closeModal();
-      });
+      dispatch(updateProduct({ id: product._id, productData: formData }))
+        .then(() => {
+          closeModal();
+        })
+        .catch((err) => {
+          console.error("Error updating product:", err);
+        });
     } else {
-      dispatch(addProduct(formData)).then(() => {
-        closeModal();
-      });
+      dispatch(addProduct(formData))
+        .then(() => {
+          closeModal();
+        })
+        .catch((err) => {
+          console.error("Error adding product:", err);
+        });
     }
   };
+
+  useEffect(() => {
+    return () => {
+      // Clean up the object URL
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75">
@@ -59,6 +86,7 @@ const ProductForm = ({ closeModal, product }) => {
         <h2 className="text-2xl font-bold mb-4">{product ? 'Update Product' : 'Create Product'}</h2>
         
         <form onSubmit={handleSubmit} encType="multipart/form-data">
+          {/* Product Name */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">Product Name</label>
             <input
@@ -71,6 +99,7 @@ const ProductForm = ({ closeModal, product }) => {
             />
           </div>
 
+          {/* Category */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">Category</label>
             <select
@@ -92,6 +121,7 @@ const ProductForm = ({ closeModal, product }) => {
             </select>
           </div>
 
+          {/* Price */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">Price</label>
             <input
@@ -104,6 +134,7 @@ const ProductForm = ({ closeModal, product }) => {
             />
           </div>
 
+          {/* Description */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">Description</label>
             <textarea
@@ -116,6 +147,7 @@ const ProductForm = ({ closeModal, product }) => {
             ></textarea>
           </div>
 
+          {/* Product Image */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">Product Image</label>
             <input
@@ -126,16 +158,17 @@ const ProductForm = ({ closeModal, product }) => {
             />
           </div>
 
-          {image && (
+          {imagePreview && (
             <div className="mb-4">
               <img
-                src={URL.createObjectURL(image)}
+                src={imagePreview}
                 alt="Preview"
-                className="mt-2 w-full h-10 object-cover rounded-md"
+                className="mt-2 w-full h-40 object-cover rounded-md"
               />
             </div>
           )}
 
+          {/* Stock Status */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">Stock Status</label>
             <select
