@@ -1,4 +1,3 @@
-// UserDetails.jsx
 import React from 'react';
 
 const UserDetails = () => {

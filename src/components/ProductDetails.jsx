@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getProducts, deleteProduct } from '../redux/productsSlice';
-import ProductForm from './ProductForm'; // Import the ProductForm component
+import ProductForm from './ProductForm'; 
 
 const ProductDetails = () => {
   const dispatch = useDispatch();
   const { items: products, loading, error } = useSelector((state) => state.products);
   
-  const [selectedProduct, setSelectedProduct] = useState(null); // State for selected product
-  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    dispatch(getProducts()); // Fetch products on component mount
+    dispatch(getProducts());
   }, [dispatch]);
 
   const handleUpdateClick = (product) => {
-    setSelectedProduct(product); // Set the selected product
-    setIsModalOpen(true); // Open the modal
+    setSelectedProduct(product);
+    setIsModalOpen(true); 
   };
 
   const handleDeleteClick = (id) => {
@@ -26,8 +26,8 @@ const ProductDetails = () => {
   };
 
   const closeModal = () => {
-    setSelectedProduct(null); // Clear the selected product
-    setIsModalOpen(false); // Close the modal
+    setSelectedProduct(null);
+    setIsModalOpen(false);
   };
 
   if (loading) return <p>Loading...</p>;
@@ -49,10 +49,10 @@ const ProductDetails = () => {
           {products.map((product) => (
             <tr key={product._id}>
               <td className="whitespace-nowrap px-4 py-2">
-                {product.image ? ( // Check if the image exists
+                {product.image ? (
                   <img src={product.image} alt={product.productName} className="h-12 w-12 object-cover" />
                 ) : (
-                  <span>No Image</span> // Fallback if no image is available
+                  <span>No Image</span>
                 )}
               </td>
               <td className="whitespace-nowrap px-4 py-2">{product.productName}</td>
@@ -61,7 +61,7 @@ const ProductDetails = () => {
               <td className="whitespace-nowrap px-4 py-2">
                 <button
                   className="mr-2 text-blue-600 hover:underline"
-                  onClick={() => handleUpdateClick(product)} // Open modal for editing
+                  onClick={() => handleUpdateClick(product)}
                 >
                   Edit
                 </button>
@@ -78,7 +78,7 @@ const ProductDetails = () => {
       </table>
 
       {isModalOpen && (
-        <ProductForm product={selectedProduct} closeModal={closeModal} /> // Pass selected product to form
+        <ProductForm product={selectedProduct} closeModal={closeModal} />
       )}
     </div>
   );

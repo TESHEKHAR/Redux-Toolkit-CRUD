@@ -34,8 +34,6 @@ const Navbar = () => {
                 <li><a className="text-gray-500 transition hover:text-gray-500/75" href="#">Blog</a></li>
               </ul>
             </nav>
-
-            {/* Profile Button */}
             <div className="hidden md:relative md:block">
               <button
                 type="button"
@@ -49,8 +47,6 @@ const Navbar = () => {
                   className="size-10 object-cover"
                 />
               </button>
-
-              {/* Profile Menu */}
               {isProfileMenuOpen && (
                 <div
                   className="absolute end-0 z-10 mt-0.5 w-56 divide-y divide-gray-100 rounded-md border border-gray-100 bg-white shadow-lg"

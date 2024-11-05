@@ -16,16 +16,14 @@ const ProductForm = ({ closeModal, product }) => {
   const [stockStatus, setStockStatus] = useState('In Stock');
 
   useEffect(() => {
-    // Load existing product data if available
     if (product) {
       setProductName(product.productName);
       setCategory(product.category ? product.category._id : '');
       setPrice(product.price);
       setDescription(product.description);
       setStockStatus(product.stockStatus);
-      setImagePreview(product.image); // Use the product image for the preview
+      setImagePreview(product.image);
     } else {
-      // Clear form fields for new product
       setImagePreview('');
     }
     dispatch(getCategory());
@@ -49,9 +47,8 @@ const ProductForm = ({ closeModal, product }) => {
     formData.append('price', price);
     formData.append('description', description);
     formData.append('stockStatus', stockStatus);
-    if (image) formData.append('image', image); // Append new image if it exists
+    if (image) formData.append('image', image);
 
-    // Dispatch add or update based on whether a product is being edited
     if (product) {
       dispatch(updateProduct({ id: product._id, productData: formData }))
         .then(() => {
@@ -73,7 +70,6 @@ const ProductForm = ({ closeModal, product }) => {
 
   useEffect(() => {
     return () => {
-      // Clean up the object URL
       if (imagePreview) {
         URL.revokeObjectURL(imagePreview);
       }
@@ -86,7 +82,6 @@ const ProductForm = ({ closeModal, product }) => {
         <h2 className="text-2xl font-bold mb-4">{product ? 'Update Product' : 'Create Product'}</h2>
         
         <form onSubmit={handleSubmit} encType="multipart/form-data">
-          {/* Product Name */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">Product Name</label>
             <input
@@ -98,8 +93,6 @@ const ProductForm = ({ closeModal, product }) => {
               required
             />
           </div>
-
-          {/* Category */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">Category</label>
             <select
@@ -120,8 +113,6 @@ const ProductForm = ({ closeModal, product }) => {
               )}
             </select>
           </div>
-
-          {/* Price */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">Price</label>
             <input
@@ -133,8 +124,6 @@ const ProductForm = ({ closeModal, product }) => {
               required
             />
           </div>
-
-          {/* Description */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">Description</label>
             <textarea
@@ -146,8 +135,6 @@ const ProductForm = ({ closeModal, product }) => {
               required
             ></textarea>
           </div>
-
-          {/* Product Image */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">Product Image</label>
             <input
@@ -167,8 +154,6 @@ const ProductForm = ({ closeModal, product }) => {
               />
             </div>
           )}
-
-          {/* Stock Status */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">Stock Status</label>
             <select

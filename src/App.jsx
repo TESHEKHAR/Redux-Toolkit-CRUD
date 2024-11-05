@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import './App.css';
 import Navbar from './components/Navbar';
-import UserDetails from './components/UserDetails';
 import ProductForm from './components/ProductForm';
 import ProductDetails from './components/ProductDetails';
 
