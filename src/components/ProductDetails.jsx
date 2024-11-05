@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getProducts, deleteProduct } from '../redux/productsSlice';
-import ProductForm from './ProductForm'; 
+import ProductForm from './ProductForm';
 
 const ProductDetails = () => {
   const dispatch = useDispatch();
   const { items: products, loading, error } = useSelector((state) => state.products);
-  
+
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -21,13 +21,23 @@ const ProductDetails = () => {
 
   const handleDeleteClick = (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      dispatch(deleteProduct(id));
+      dispatch(deleteProduct(id))
+        .then(() => {
+          dispatch(getProducts());
+        })
+        .catch((err) => {
+          console.error("Error deleting product:", err);
+        });
     }
   };
 
   const closeModal = () => {
     setSelectedProduct(null);
     setIsModalOpen(false);
+  };
+
+  const refreshProducts = () => {
+    dispatch(getProducts());
   };
 
   if (loading) return <p>Loading...</p>;
@@ -78,7 +88,11 @@ const ProductDetails = () => {
       </table>
 
       {isModalOpen && (
-        <ProductForm product={selectedProduct} closeModal={closeModal} />
+        <ProductForm
+          product={selectedProduct}
+          closeModal={closeModal}
+          onSuccess={refreshProducts}
+        />
       )}
     </div>
   );

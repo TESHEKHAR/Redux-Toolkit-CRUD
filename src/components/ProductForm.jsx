@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { addProduct, updateProduct, getProducts } from '../redux/productsSlice';
 import { getCategory } from '../redux/categorySlice';
-import { addProduct, updateProduct } from '../redux/productsSlice';
 
-const ProductForm = ({ closeModal, product }) => {
+const ProductForm = ({ closeModal, product, onSuccess }) => {
   const dispatch = useDispatch();
-  const { items: categories, loading, error } = useSelector((state) => state.category);
+  const { items: categories } = useSelector((state) => state.category);
 
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
@@ -32,14 +32,10 @@ const ProductForm = ({ closeModal, product }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setImage(file);
-    if (file) {
-      setImagePreview(URL.createObjectURL(file));
-    } else {
-      setImagePreview('');
-    }
+    setImagePreview(file ? URL.createObjectURL(file) : '');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
     formData.append('productName', productName);
@@ -49,22 +45,19 @@ const ProductForm = ({ closeModal, product }) => {
     formData.append('stockStatus', stockStatus);
     if (image) formData.append('image', image);
 
-    if (product) {
-      dispatch(updateProduct({ id: product._id, productData: formData }))
-        .then(() => {
-          closeModal();
-        })
-        .catch((err) => {
-          console.error("Error updating product:", err);
-        });
-    } else {
-      dispatch(addProduct(formData))
-        .then(() => {
-          closeModal();
-        })
-        .catch((err) => {
-          console.error("Error adding product:", err);
-        });
+    const action = product
+      ? updateProduct({ id: product._id, productData: formData })
+      : addProduct(formData);
+
+    try {
+      await dispatch(action).unwrap();
+      if (!product) {
+        await dispatch(getProducts()); 
+      }
+      closeModal();
+      if (onSuccess) onSuccess();
+    } catch (err) {
+      console.error("Error saving product:", err);
     }
   };
 
@@ -83,102 +76,73 @@ const ProductForm = ({ closeModal, product }) => {
         
         <form onSubmit={handleSubmit} encType="multipart/form-data">
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Product Name</label>
+            <label className="block text-gray-700 font-medium mb-1">Product Name</label>
             <input
               type="text"
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Enter product name"
+              className="w-full px-3 py-2 border rounded"
               required
             />
           </div>
+          
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Category</label>
+            <label className="block text-gray-700 font-medium mb-2">Category</label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="w-full px-3 py-2 border rounded"
               required
             >
-              <option value="">Select category</option>
-              {loading ? (
-                <option value="" disabled>Loading...</option>
-              ) : error ? (
-                <option value="" disabled>Error loading categories</option>
-              ) : (
-                categories.map((cat) => (
-                  <option key={cat.id} value={cat._id}>{cat.name}</option>
-                ))
-              )}
+              <option value="">Select Category</option>
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat._id}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
           </div>
+          
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Price</label>
+            <label className="block text-gray-700 font-medium mb-2">Price</label>
             <input
               type="number"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Enter price"
+              className="w-full px-3 py-2 border rounded"
               required
             />
           </div>
+          
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Description</label>
+            <label className="block text-gray-700 font-medium mb-2">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Enter description"
-              rows="3"
+              className="w-full px-3 py-2 border rounded"
               required
             ></textarea>
           </div>
+          
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Product Image</label>
-            <input
-              type="file"
-              accept="image/*"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              onChange={handleImageChange}
-            />
-          </div>
-
-          {imagePreview && (
-            <div className="mb-4">
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="mt-2 w-full h-40 object-cover rounded-md"
-              />
-            </div>
-          )}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Stock Status</label>
-            <select
-              value={stockStatus}
-              onChange={(e) => setStockStatus(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="In Stock">In Stock</option>
-              <option value="Out of Stock">Out of Stock</option>
-            </select>
+            <label className="block text-gray-700 font-medium mb-2">Image</label>
+            <input type="file" onChange={handleImageChange} className="w-full" />
+            {imagePreview && <img src={imagePreview} alt="Preview" className="h-20 mt-2" />}
           </div>
 
           <div className="flex justify-end">
             <button
               type="button"
-              className="mr-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              className="mr-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
               onClick={closeModal}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
-              {product ? 'Update' : 'Save'}
+              {product ? 'Update' : 'Create'}
             </button>
           </div>
         </form>
